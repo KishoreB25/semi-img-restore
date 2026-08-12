@@ -52,24 +52,39 @@ def get_dataloaders(base_dir, val_split=0.1, batch_size=16, seed=42):
     train_gt_dir = os.path.join(base_dir, "train", "train", "GT")
     train_noisy_dir = os.path.join(base_dir, "train", "train", "NoisyLR")
     
+    config_dir = os.path.join(base_dir, "configs")
+    split_file = os.path.join(config_dir, "split.yaml")
+    
     all_files = sorted(os.listdir(train_gt_dir))
     
-    # Deterministic split
-    np.random.seed(seed)
-    indices = np.random.permutation(len(all_files))
-    val_size = int(len(all_files) * val_split)
-    
-    val_idx = indices[:val_size]
-    train_idx = indices[val_size:]
-    
-    train_files = [all_files[i] for i in train_idx]
-    val_files = [all_files[i] for i in val_idx]
-    
+    if os.path.exists(split_file):
+        import yaml
+        with open(split_file, "r") as f:
+            split_data = yaml.safe_load(f)
+        train_files = split_data['train']
+        val_files = split_data['val']
+    else:
+        # Deterministic split
+        np.random.seed(seed)
+        indices = np.random.permutation(len(all_files))
+        val_size = int(len(all_files) * val_split)
+        
+        val_idx = indices[:val_size]
+        train_idx = indices[val_size:]
+        
+        train_files = [all_files[i] for i in train_idx]
+        val_files = [all_files[i] for i in val_idx]
+        
+        import yaml
+        os.makedirs(config_dir, exist_ok=True)
+        with open(split_file, "w") as f:
+            yaml.dump({'train': train_files, 'val': val_files}, f)
+            
     train_dataset = RestorationDataset(gt_dir=train_gt_dir, noisy_dir=train_noisy_dir, filenames=train_files)
     val_dataset = RestorationDataset(gt_dir=train_gt_dir, noisy_dir=train_noisy_dir, filenames=val_files)
     
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
     
     return train_loader, val_loader
 
