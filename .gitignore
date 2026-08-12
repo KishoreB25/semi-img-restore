@@ -1,0 +1,16 @@
+Test_NoisyLR/**
+train/**
+output/**
+*.pdf
+*.npy
+*.pyc
+
+# Python environments and caches
+venv/
+env/
+.env/
+__pycache__/
+.ipynb_checkpoints/
+reports/
+results/
+visualizations/
