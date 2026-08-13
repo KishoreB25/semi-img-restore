@@ -47,8 +47,10 @@ def main():
     os.makedirs(results_dir, exist_ok=True)
     os.makedirs(checkpoints_dir, exist_ok=True)
     
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}")
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA is not available! Please install the CUDA version of PyTorch.")
+    device = torch.device('cuda')
+    print(f"Using device: {device} ({torch.cuda.get_device_name(0)})")
     
     # 1. Configuration
     batch_size = 16 if torch.cuda.is_available() else 4
