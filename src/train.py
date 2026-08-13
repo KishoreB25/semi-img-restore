@@ -11,7 +11,9 @@ from tqdm import tqdm
 
 from dataset import get_dataloaders
 from resunet import ResUNet
+from resunet_advanced import AdvancedResUNet
 from metrics import Evaluator
+import time
 
 def save_visuals(noisy_np, pred_np, gt_np, fname, save_dir, epoch):
     os.makedirs(save_dir, exist_ok=True)
@@ -47,6 +49,8 @@ def main():
     parser.add_argument('--epochs', type=int, default=None, help='Number of epochs to train')
     parser.add_argument('--lr', type=float, default=None, help='Learning rate')
     parser.add_argument('--synthetic_ratio', type=float, default=None, help='Ratio of synthetic to real data (e.g. 1.0 = 1:1)')
+    parser.add_argument('--use_se', action='store_true', help='Use Squeeze-and-Excitation')
+    parser.add_argument('--use_dilated_bottleneck', action='store_true', help='Use Multi-Scale Dilated Bottleneck')
     args = parser.parse_args()
 
     base_dir = r"d:\semi-img-restore"
@@ -132,7 +136,16 @@ def main():
     
     # 3. Model & Loss
     from losses import CombinedLoss
-    model = ResUNet().to(device)
+    
+    if args.use_se or args.use_dilated_bottleneck or config.get('model') == 'AdvancedResUNet':
+        model = AdvancedResUNet(use_se=args.use_se, use_dilated_bottleneck=args.use_dilated_bottleneck).to(device)
+        config['model'] = 'AdvancedResUNet'
+    else:
+        model = ResUNet().to(device)
+        
+    num_params = sum(p.numel() for p in model.parameters())
+    print(f"Model Parameters: {num_params:,}")
+    
     loss_params = config.get('loss_params', {})
     criterion = CombinedLoss(
         loss_type=config['loss'],
@@ -177,12 +190,16 @@ def main():
         val_lpips = 0.0
         
         visuals_saved = 0
+        inference_times = []
         
         with torch.no_grad():
             for noisy, gt, fnames in tqdm(val_loader, desc=f"Epoch {epoch}/{num_epochs} [Val]"):
                 noisy, gt = noisy.to(device), gt.to(device)
                 
+                start_time = time.time()
                 pred = model(noisy)
+                inference_times.append((time.time() - start_time) / noisy.size(0))
+                
                 loss = criterion(pred, gt)
                 val_loss += loss.item() * noisy.size(0)
                 
@@ -207,7 +224,11 @@ def main():
         val_ssim /= len(val_loader.dataset)
         val_lpips /= len(val_loader.dataset)
         
+        avg_inference_latency = sum(inference_times) / len(inference_times) * 1000 # in ms
+        gpu_memory = torch.cuda.max_memory_allocated(device) / (1024 ** 2) if torch.cuda.is_available() else 0
+        
         print(f"Epoch {epoch} Summary: Train L1: {train_loss:.4f} | Val L1: {val_loss:.4f} | PSNR: {val_psnr:.2f} | SSIM: {val_ssim:.4f} | LPIPS: {val_lpips:.4f}")
+        print(f"Latency: {avg_inference_latency:.2f}ms | GPU Mem: {gpu_memory:.1f}MB")
         
         logs.append({
             'epoch': epoch,
@@ -216,7 +237,10 @@ def main():
             'psnr': val_psnr,
             'ssim': val_ssim,
             'lpips': val_lpips,
-            'lr': optimizer.param_groups[0]['lr']
+            'lr': optimizer.param_groups[0]['lr'],
+            'latency_ms': avg_inference_latency,
+            'gpu_mem_mb': gpu_memory,
+            'params': num_params
         })
         
         if val_psnr > best_psnr:
@@ -232,7 +256,7 @@ def main():
     csv_path = os.path.join(base_dir, "experiments.csv")
     with open(csv_path, "a") as f:
         best_epoch_log = df.loc[df['psnr'].idxmax()]
-        f.write(f"{args.experiment_id},{config['model']},{config['loss']},{config.get('augmentation', 'None')},{config.get('synthetic_ratio', 0.0)},{best_epoch_log['psnr']:.4f},{best_epoch_log['ssim']:.4f},{best_epoch_log['lpips']:.4f},TODO,Synthetic Degradation Ratio: {config.get('synthetic_ratio', 0.0)}\n")
+        f.write(f"{args.experiment_id},{config['model']},{config['loss']},{config.get('augmentation', 'None')},{config.get('synthetic_ratio', 0.0)},{best_epoch_log['psnr']:.4f},{best_epoch_log['ssim']:.4f},{best_epoch_log['lpips']:.4f},{best_epoch_log['latency_ms']:.2f},{best_epoch_log['params']}\n")
 
 if __name__ == "__main__":
     main()
