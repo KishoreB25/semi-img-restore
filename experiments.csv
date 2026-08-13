@@ -3,3 +3,4 @@ phase01_baseline,bicubic,None,None,None,21.7375,0.5241,0.4711,0.9382,Initial bas
 phase01_baseline,bicubic,None,None,None,21.7375,0.5241,0.4711,0.4241,Initial baseline
 phase03_resunet,ResUNet,L1,None,None,24.0457,0.7316,0.4331,TODO,First Neural Baseline
 phase01_baseline,bicubic,None,None,None,21.7375,0.5241,0.4711,0.8770,Initial baseline
+phase03_resunet,ResUNet,L1,None,None,23.0348,0.7236,0.4440,TODO,First Neural Baseline
