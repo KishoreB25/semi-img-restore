@@ -46,6 +46,7 @@ def main():
     parser.add_argument('--experiment_id', type=str, default='phase03_neural_baseline', help='Experiment ID for results directory')
     parser.add_argument('--epochs', type=int, default=None, help='Number of epochs to train')
     parser.add_argument('--lr', type=float, default=None, help='Learning rate')
+    parser.add_argument('--synthetic_ratio', type=float, default=None, help='Ratio of synthetic to real data (e.g. 1.0 = 1:1)')
     args = parser.parse_args()
 
     base_dir = r"d:\semi-img-restore"
@@ -60,6 +61,7 @@ def main():
         'seed': 42,
         'loss': 'L1',
         'model': 'ResUNet',
+        'synthetic_ratio': 0.0,
         'loss_params': {
             'char_eps': 1e-3,
             'lambda_char': 0.8,
@@ -80,10 +82,25 @@ def main():
         config['epochs'] = args.epochs
     if args.lr:
         config['initial_lr'] = args.lr
+    if args.synthetic_ratio is not None:
+        config['synthetic_ratio'] = args.synthetic_ratio
+
+    # Load synthetic degradation config if it exists
+    deg_cfg = None
+    deg_cfg_path = os.path.join(base_dir, "configs", "synthetic_degradation.yaml")
+    if os.path.exists(deg_cfg_path):
+        with open(deg_cfg_path, 'r') as f:
+            deg_cfg_data = yaml.safe_load(f)
+            deg_cfg = deg_cfg_data.get('degradation', None)
+            # If not set in config/CLI, take from configs/synthetic_degradation.yaml
+            if args.synthetic_ratio is None and 'synthetic_ratio' not in config:
+                config['synthetic_ratio'] = deg_cfg_data.get('training', {}).get('synthetic_ratio', 0.0)
 
     # Determine results directory
     if args.experiment_id.startswith('phase04'):
         results_dir = os.path.join(base_dir, "results", "phase04_losses", args.experiment_id)
+    elif args.experiment_id.startswith('phase05'):
+        results_dir = os.path.join(base_dir, "results", "phase05_synthetic", args.experiment_id)
     else:
         results_dir = os.path.join(base_dir, "results", args.experiment_id)
 
@@ -105,8 +122,12 @@ def main():
     batch_size = config['batch_size']
     num_epochs = config['epochs']
     lr = config['initial_lr']
+    synth_ratio = config['synthetic_ratio']
     
-    train_loader, val_loader = get_dataloaders(base_dir, val_split=0.1, batch_size=batch_size, seed=42)
+    train_loader, val_loader = get_dataloaders(
+        base_dir, val_split=0.1, batch_size=batch_size, seed=42,
+        synthetic_ratio=synth_ratio, degradation_cfg=deg_cfg
+    )
     evaluator = Evaluator(device=device)
     
     # 3. Model & Loss
@@ -211,7 +232,7 @@ def main():
     csv_path = os.path.join(base_dir, "experiments.csv")
     with open(csv_path, "a") as f:
         best_epoch_log = df.loc[df['psnr'].idxmax()]
-        f.write(f"{args.experiment_id},{config['model']},{config['loss']},{config.get('augmentation', 'None')},None,{best_epoch_log['psnr']:.4f},{best_epoch_log['ssim']:.4f},{best_epoch_log['lpips']:.4f},TODO,Loss Experiment: {config['loss']}\n")
+        f.write(f"{args.experiment_id},{config['model']},{config['loss']},{config.get('augmentation', 'None')},{config.get('synthetic_ratio', 0.0)},{best_epoch_log['psnr']:.4f},{best_epoch_log['ssim']:.4f},{best_epoch_log['lpips']:.4f},TODO,Synthetic Degradation Ratio: {config.get('synthetic_ratio', 0.0)}\n")
 
 if __name__ == "__main__":
     main()

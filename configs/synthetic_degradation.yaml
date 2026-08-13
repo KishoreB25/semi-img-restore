@@ -1,0 +1,19 @@
+# Phase 05 — Synthetic Degradation Configuration
+
+degradation:
+  gaussian:
+    # Uniform range for sigma_gaussian based on calibration
+    min_sigma: 0.00
+    max_sigma: 0.10
+  speckle:
+    # Uniform range for sigma_speckle based on calibration
+    min_sigma: 0.10
+    max_sigma: 0.20
+  downsample:
+    scale_factor: 0.5  # 256x256 -> 128x128
+
+training:
+  # Mixing ratios of real vs synthetic data to evaluate
+  # e.g., ratio of 1.0 means 1:1 real:synthetic
+  # We can configure synthetic_ratio in our experiments
+  synthetic_ratio: 1.0
