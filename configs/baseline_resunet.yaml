@@ -1,4 +1,4 @@
-batch_size: 4
+batch_size: 16
 epochs: 30
 initial_lr: 0.0002
 loss: L1Loss
