@@ -40,5 +40,22 @@ Trains the full `ResUNet` architecture over the 2,880 training split for 30 epoc
 venv\Scripts\python.exe src\train.py
 ```
 
+### Phase 04: Loss Experiments
+Runs experiments comparing different loss functions (L1, Charbonnier, Char_SSIM, Char_SSIM_Grad) to optimize restoration quality.
+```bash
+venv\Scripts\python.exe src\run_loss_experiments.py
+```
+
+### Phase 05: Synthetic Degradation
+Verifies the synthetic degradation operators and runs training with mixed real and synthetic training data:
+- **Run Verification and Statistics Calibration**:
+  ```bash
+  venv\Scripts\python.exe verify_degradation.py
+  ```
+- **Train ResUNet with 1:1 Real to Synthetic Data Mixing**:
+  ```bash
+  venv\Scripts\python.exe src\train.py --loss_type L1 --experiment_id phase05_synthetic_ratio_1_0 --epochs 30 --synthetic_ratio 1.0
+  ```
+
 ## Results
 Results, loss curves, configurations, and visuals for each phase are saved inside the respective `results/phaseXX_.../` directories. Metrics for major neural experiments are appended to `experiments.csv`.
