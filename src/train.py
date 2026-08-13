@@ -39,8 +39,54 @@ def save_visuals(noisy_np, pred_np, gt_np, fname, save_dir, epoch):
     plt.close()
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, default=None, help='Path to configuration file')
+    parser.add_argument('--loss_type', type=str, default=None, help='Loss type (L1, Charbonnier, Char_SSIM, Char_SSIM_Grad)')
+    parser.add_argument('--experiment_id', type=str, default='phase03_neural_baseline', help='Experiment ID for results directory')
+    parser.add_argument('--epochs', type=int, default=None, help='Number of epochs to train')
+    parser.add_argument('--lr', type=float, default=None, help='Learning rate')
+    args = parser.parse_args()
+
     base_dir = r"d:\semi-img-restore"
-    results_dir = os.path.join(base_dir, "results", "phase03_neural_baseline")
+    
+    # 1. Default Configuration
+    config = {
+        'optimizer': 'AdamW',
+        'initial_lr': 2e-4,
+        'scheduler': 'CosineAnnealingLR',
+        'batch_size': 16 if torch.cuda.is_available() else 4,
+        'epochs': 30,
+        'seed': 42,
+        'loss': 'L1',
+        'model': 'ResUNet',
+        'loss_params': {
+            'char_eps': 1e-3,
+            'lambda_char': 0.8,
+            'lambda_ssim': 0.2,
+            'lambda_grad': 0.1
+        }
+    }
+
+    if args.config and os.path.exists(args.config):
+        with open(args.config, 'r') as f:
+            file_config = yaml.safe_load(f)
+            config.update(file_config)
+
+    # CLI Overrides
+    if args.loss_type:
+        config['loss'] = args.loss_type
+    if args.epochs:
+        config['epochs'] = args.epochs
+    if args.lr:
+        config['initial_lr'] = args.lr
+
+    # Determine results directory
+    if args.experiment_id.startswith('phase04'):
+        results_dir = os.path.join(base_dir, "results", "phase04_losses", args.experiment_id)
+    else:
+        results_dir = os.path.join(base_dir, "results", args.experiment_id)
+
     visuals_dir = os.path.join(results_dir, "visuals")
     checkpoints_dir = os.path.join(results_dir, "checkpoints")
     
@@ -50,33 +96,30 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
     
-    # 1. Configuration
-    batch_size = 16 if torch.cuda.is_available() else 4
-    num_epochs = 30
-    lr = 2e-4
-    
-    config = {
-        'optimizer': 'AdamW',
-        'initial_lr': lr,
-        'scheduler': 'CosineAnnealingLR',
-        'batch_size': batch_size,
-        'epochs': num_epochs,
-        'seed': 42,
-        'loss': 'L1Loss',
-        'model': 'ResUNet'
-    }
-    
+    # Save active config
     os.makedirs(os.path.join(base_dir, "configs"), exist_ok=True)
-    with open(os.path.join(base_dir, "configs", "baseline_resunet.yaml"), "w") as f:
+    with open(os.path.join(results_dir, "config.yaml"), "w") as f:
         yaml.dump(config, f)
         
     # 2. Data
+    batch_size = config['batch_size']
+    num_epochs = config['epochs']
+    lr = config['initial_lr']
+    
     train_loader, val_loader = get_dataloaders(base_dir, val_split=0.1, batch_size=batch_size, seed=42)
     evaluator = Evaluator(device=device)
     
     # 3. Model & Loss
+    from losses import CombinedLoss
     model = ResUNet().to(device)
-    criterion = nn.L1Loss()
+    loss_params = config.get('loss_params', {})
+    criterion = CombinedLoss(
+        loss_type=config['loss'],
+        char_eps=loss_params.get('char_eps', 1e-3),
+        lambda_char=loss_params.get('lambda_char', 0.8),
+        lambda_ssim=loss_params.get('lambda_ssim', 0.2),
+        lambda_grad=loss_params.get('lambda_grad', 0.1)
+    )
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs, eta_min=1e-6)
     
@@ -167,9 +210,8 @@ def main():
     # Update global experiments.csv
     csv_path = os.path.join(base_dir, "experiments.csv")
     with open(csv_path, "a") as f:
-        # psnr, ssim, lpips from best epoch? Let's take final epoch for simplicity, or best PSNR epoch
         best_epoch_log = df.loc[df['psnr'].idxmax()]
-        f.write(f"phase03_resunet,ResUNet,L1,None,None,{best_epoch_log['psnr']:.4f},{best_epoch_log['ssim']:.4f},{best_epoch_log['lpips']:.4f},TODO,First Neural Baseline\n")
+        f.write(f"{args.experiment_id},{config['model']},{config['loss']},{config.get('augmentation', 'None')},None,{best_epoch_log['psnr']:.4f},{best_epoch_log['ssim']:.4f},{best_epoch_log['lpips']:.4f},TODO,Loss Experiment: {config['loss']}\n")
 
 if __name__ == "__main__":
     main()
