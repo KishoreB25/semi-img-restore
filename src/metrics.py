@@ -7,9 +7,9 @@ from skimage.metrics import structural_similarity as ssim_metric
 class Evaluator:
     def __init__(self, device='cpu'):
         self.device = device
-        self.lpips_vgg = lpips.LPIPS(net='vgg').to(self.device)
+        self.lpips_net = lpips.LPIPS(net='alex').to(self.device)
         # Avoid tracking gradients for evaluation
-        self.lpips_vgg.eval()
+        self.lpips_net.eval()
 
     def calculate_psnr(self, pred, target, data_range=1.0):
         """
@@ -58,7 +58,7 @@ class Evaluator:
         target_scaled = target_3c * 2.0 - 1.0
         
         with torch.no_grad():
-            lpips_val = self.lpips_vgg(pred_scaled, target_scaled)
+            lpips_val = self.lpips_net(pred_scaled, target_scaled)
             
         return lpips_val.mean().item()
 
