@@ -1,61 +1,80 @@
-# SEMICON AI 2026 - AI-Based Restoration of Degraded Images
+# Image Restoration (KLA Competition Submission)
 
-This repository contains the implementation pipeline for the AI-Based Restoration of Degraded Images challenge, following a strict 13-Phase Agentic Roadmap.
+This repository contains the final Phase 12 codebase for the semi-supervised image restoration competition. The final architecture is **AdvancedResUNet (E06-D variant)**, characterized by multi-scale Dilated Bottlenecks and Squeeze-and-Excitation (SE) blocks.
 
-## Setup
+## 1. Repository Structure
 
-It's recommended to run scripts inside a Python virtual environment:
+```
+semi-img-restore/
+├── README.md               # Setup and execution instructions
+├── requirements.txt        # Frozen training & inference environment
+├── LICENSE                 # MIT License
+│
+├── src/                    # Core source code (Architecture, DataLoaders, Metrics)
+│   ├── resunet_advanced.py # The official E06-D Architecture
+│   ├── dataset.py
+│   ├── metrics.py
+│   └── ...
+│
+├── scripts/                # Execution Scripts
+│   ├── evaluate.py         # STANDALONE INFERENCE SCRIPT (Competition Target)
+│   └── train.py            # Reproducibility training script
+│
+├── weights/
+│   └── best_model.pth      # Official frozen 1,026,766 parameter E06-D Checkpoint
+│
+├── outputs/
+│   └── validation/         # 320-image reproducibility output directory
+│
+├── figures/                # Qualitative visualizations from validation
+│   └── ...
+│
+└── docs/                   # Authoritative model cards and documentation
+    ├── FINAL_MODEL_CARD.md
+    ├── EVALUATION_PROTOCOL.md
+    └── REPRODUCIBILITY.md
+```
+
+## 2. Setup Instructions
+
+The repository relies on PyTorch and standard image processing libraries. Install the exact frozen environment using:
 
 ```bash
-python -m venv venv
-venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Running the Phases
+*Note:* Ensure you have a CUDA-compatible environment. The scripts will automatically fallback to CPU if CUDA is unavailable, but inference time will significantly increase.
 
-All scripts should be executed from the project root (`d:\semi-img-restore`).
+## 3. Running Inference (Standalone Evaluator)
 
-### Phase 00: Dataset Audit
-Verifies the counts, shapes, and statistical ranges of the provided `.npy` files.
+The competition evaluation script is `scripts/evaluate.py`. It requires zero manual source code modifications and accepts raw paths.
+
+**Important Guarantees:**
+*   Loads exactly the frozen `best_model.pth` E06-D.
+*   Takes raw `float32` `.npy` arrays as input.
+*   Produces strictly clamped `[0,1]` float32 predictions internally.
+*   Does not compute Ground Truth metrics during the inference pass.
+
+### Execution Command
+
 ```bash
-venv\Scripts\python.exe src\dataset_audit.py
+python scripts/evaluate.py --input_dir /path/to/test_images --output_dir /path/to/restored
 ```
 
-### Phase 01: Bicubic Baseline
-Runs a non-neural `F.interpolate` baseline to establish the absolute PSNR, SSIM, and LPIPS floor.
+### Configurable Output Format
+By default, the script outputs strictly unquantized native `float32` `.npy` arrays. If the competition framework ultimately demands PNG or TIFF image files, append the `--output_format` flag:
+
 ```bash
-venv\Scripts\python.exe src\baseline.py
+python scripts/evaluate.py --input_dir /path/to/test_images --output_dir /path/to/restored --output_format png
+```
+*Supported formats: `npy` (default), `png`, `tif`.*
+
+## 4. Training Reproducibility
+
+The final model weights are already provided in `weights/best_model.pth`. Training from scratch is **not required** for inference. However, if reproducibility verification is requested, the training script can be run directly from the repository root:
+
+```bash
+python scripts/train.py
 ```
 
-### Phase 02: Overfit Sanity Check
-Trains a tiny `ResUNet` variant on exactly 2 pairs for 2000 steps to verify gradient flow and loss convergence.
-```bash
-venv\Scripts\python.exe src\train_overfit.py
-```
-
-### Phase 03: Neural Baseline (ResUNet)
-Trains the full `ResUNet` architecture over the 2,880 training split for 30 epochs using an `AdamW` optimizer and `CosineAnnealingLR` scheduler. Evaluates against the 320 validation split.
-```bash
-venv\Scripts\python.exe src\train.py
-```
-
-### Phase 04: Loss Experiments
-Runs experiments comparing different loss functions (L1, Charbonnier, Char_SSIM, Char_SSIM_Grad) to optimize restoration quality.
-```bash
-venv\Scripts\python.exe src\run_loss_experiments.py
-```
-
-### Phase 05: Synthetic Degradation
-Verifies the synthetic degradation operators and runs training with mixed real and synthetic training data:
-- **Run Verification and Statistics Calibration**:
-  ```bash
-  venv\Scripts\python.exe verify_degradation.py
-  ```
-- **Train ResUNet with 1:1 Real to Synthetic Data Mixing**:
-  ```bash
-  venv\Scripts\python.exe src\train.py --loss_type L1 --experiment_id phase05_synthetic_ratio_1_0 --epochs 30 --synthetic_ratio 1.0
-  ```
-
-## Results
-Results, loss curves, configurations, and visuals for each phase are saved inside the respective `results/phaseXX_.../` directories. Metrics for major neural experiments are appended to `experiments.csv`.
+This will automatically load the canonical Phase 10.1 Ground Truth hyperparameters (`AdamW`, `CosineAnnealingLR`, `lr=2e-4`, Charbonnier Loss `eps=1e-3`, batch size 16) and begin a 120-epoch training cycle.

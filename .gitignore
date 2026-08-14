@@ -4,7 +4,7 @@ output/**
 *.pdf
 *.npy
 *.pyc
-
+*.png
 # Python environments and caches
 venv/
 env/
