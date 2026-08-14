@@ -2,3 +2,12 @@ experiment_id,model,loss,augmentation,synthetic_data,psnr,ssim,lpips,runtime_ms_
 phase01_baseline,bicubic,None,None,None,21.7375,0.5241,0.4711,0.9382,Initial baseline
 phase01_baseline,bicubic,None,None,None,21.7375,0.5241,0.4711,0.4241,Initial baseline
 phase03_resunet,ResUNet,L1,None,None,24.0457,0.7316,0.4331,TODO,First Neural Baseline
+phase05_synthetic_ratio_1_0,ResUNet,L1,None,1.0,24.2809,0.7378,0.4353,TODO,Synthetic Degradation Ratio: 1.0
+phase04_loss_l1,ResUNet,L1,None,0.0,25.1942,0.7445,0.4219,TODO,Synthetic Degradation Ratio: 0.0
+phase04_loss_charbonnier,ResUNet,Charbonnier,None,0.0,25.4164,0.7388,0.4158,TODO,Synthetic Degradation Ratio: 0.0
+phase04_loss_char_ssim,ResUNet,Char_SSIM,None,0.0,24.0162,0.7470,0.4263,TODO,Synthetic Degradation Ratio: 0.0
+phase04_loss_char_ssim_grad,ResUNet,Char_SSIM_Grad,None,0.0,24.0282,0.7475,0.4299,TODO,Synthetic Degradation Ratio: 0.0
+phase05_synthetic_ratio_1_0,ResUNet,L1,None,1.0,25.0114,0.7344,0.4372,TODO,Synthetic Degradation Ratio: 1.0
+E06-A,ResUNet,Charbonnier,None,0.0,23.9885,0.7335,0.3418,0.41,1187406.0
+E06-D,AdvancedResUNet,Charbonnier,None,0.0,24.4487,0.7262,0.3838,0.22,1026766.0
+phase06_E06-D_final,AdvancedResUNet,Charbonnier,None,0.0,26.0096,0.7604,0.2888,0.33,1026766.0
