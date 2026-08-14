@@ -10,3 +10,4 @@ phase04_loss_char_ssim_grad,ResUNet,Char_SSIM_Grad,None,0.0,24.0282,0.7475,0.429
 phase05_synthetic_ratio_1_0,ResUNet,L1,None,1.0,25.0114,0.7344,0.4372,TODO,Synthetic Degradation Ratio: 1.0
 E06-A,ResUNet,Charbonnier,None,0.0,23.9885,0.7335,0.3418,0.41,1187406.0
 E06-D,AdvancedResUNet,Charbonnier,None,0.0,24.4487,0.7262,0.3838,0.22,1026766.0
+phase06_E06-D_final,AdvancedResUNet,Charbonnier,None,0.0,26.0096,0.7604,0.2888,0.33,1026766.0
