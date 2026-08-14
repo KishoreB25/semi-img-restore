@@ -10,3 +10,4 @@ phase05_synthetic_ratio_1_0,ResUNet,L1,None,1.0,25.0114,0.7344,0.4372,TODO,Synth
 E06-A,ResUNet,Charbonnier,None,0.0,23.9885,0.7335,0.3418,0.41,1187406.0
 E06-D,AdvancedResUNet,Charbonnier,None,0.0,24.4487,0.7262,0.3838,0.22,1026766.0
 phase06_E06-D_final,AdvancedResUNet,Charbonnier,None,0.0,26.0096,0.7604,0.2888,0.33,1026766.0
+phase09_E06-D_grad_ablation,AdvancedResUNet,Char_Grad,None,0.0,25.5466,0.7584,0.3044,0.29,1026766.0
