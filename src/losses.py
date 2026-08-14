@@ -109,6 +109,10 @@ class CombinedLoss(nn.Module):
             return self.l1(pred, gt)
         elif self.loss_type == 'Charbonnier':
             return self.char(pred, gt)
+        elif self.loss_type == 'Char_Grad':
+            l_char = self.char(pred, gt)
+            l_grad = self.grad(pred, gt)
+            return l_char + self.lambda_grad * l_grad
         elif self.loss_type == 'Char_SSIM':
             l_char = self.char(pred, gt)
             l_ssim = self.ssim(pred, gt)
