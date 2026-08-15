@@ -133,7 +133,7 @@ def get_dataloaders(base_dir, val_split=0.1, batch_size=16, seed=42, synthetic_r
     )
     
     # Use 0 num_workers if windows/debugging, or 4 for fast loading
-    num_workers = 4 if torch.cuda.is_available() else 0
+    num_workers = 0
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
     
