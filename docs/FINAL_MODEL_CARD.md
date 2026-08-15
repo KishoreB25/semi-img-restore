@@ -16,7 +16,7 @@
 *   **Augmentations:** Synthetic data augmentation disabled. Random cropping and flipping disabled. Data loaded as 128x128 patches.
 *   **Train/Validation Split:** 90/10 split fixed via `configs/split.yaml`.
 
-## 2. Robustness Statistics (Audited Phase 07.1 Protocol)
+## 2. Robustness Statistics (Strict Evaluation Protocol)
 Evaluated across all 320 fixed validation samples.
 
 *   **Mean PSNR:** 28.54 dB
@@ -46,4 +46,4 @@ Calculated using strict CUDA synchronization (`torch.cuda.synchronize()`).
 Analysis of the five lowest-PSNR images reveals that the primary failure mode is **oversmoothing**. On highly degraded patches containing intricate structures, the model aggressively smooths out the details to minimize the Charbonnier loss penalty. 
 *Note:* While these failure cases correlate strongly with severe LPIPS spikes (e.g., `>0.4`), LPIPS alone does not prove the cause (as LPIPS responds to many perceptual differences, including blur, shift, or residual noise). However, qualitative visual inspection confirms that the perceptual divergence is driven by excessive blurring and texture erasure rather than structural hallucinations. 
 
-Attempts to inject a Gradient Loss (Phase 09) to force texture preservation succeeded slightly on these 5 specific failure cases but caused a catastrophic -1 dB drop across the global dataset, proving that E06-D with standard Charbonnier is the optimal global balance.
+Attempts to inject a Gradient Loss () to force texture preservation succeeded slightly on these 5 specific failure cases but caused a catastrophic -1 dB drop across the global dataset, proving that E06-D with standard Charbonnier is the optimal global balance.

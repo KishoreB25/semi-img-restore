@@ -4,7 +4,7 @@
 
 # Image Restoration (SEMI Hackathon 2026 Submission)
 
-This repository contains our final Phase 1 submission for the **SEMI Hackathon 2026: AI-Based Restoration of Degraded Images for Semiconductor Inspection**.
+This repository contains our final submission for **Track 1 : AI-Based Restoration of Degraded Images for Semiconductor Inspection**.
 
 ## 1. Problem Statement
 In semiconductor manufacturing, microscopic inspection images are used to measure and verify chip quality at every stage of production. These images must be extremely sharp and clean because a single pixel of noise or a small loss of detail can hide a defect that causes a chip to fail. 

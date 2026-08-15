@@ -1,4 +1,4 @@
-# Phase 07.1: Official Evaluation Protocol
+# Official Evaluation Protocol
 
 To ensure strict comparability across all current and future experiments, this document defines the exact evaluation protocol to be used.
 
