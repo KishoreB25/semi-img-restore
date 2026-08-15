@@ -2,7 +2,7 @@
   <img src="assests\images\banner.png" alt="SEMI Hackathon 2026" width="600"/>
 </div>
 
-# Image Restoration (SEMI Hackathon 2026 Submission)
+# Track 1 : Image Restoration (SEMI Hackathon 2026 Submission)
 
 This repository contains our final submission for **Track 1 : AI-Based Restoration of Degraded Images for Semiconductor Inspection**.
 
