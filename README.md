@@ -1,8 +1,34 @@
-# Image Restoration (KLA Competition Submission)
+<div align="center">
+  <img src="assets/banner.png" alt="SEMI Hackathon 2026" width="600"/>
+</div>
 
-This repository contains the final Phase 12 codebase for the semi-supervised image restoration competition. The final architecture is **AdvancedResUNet (E06-D variant)**, characterized by multi-scale Dilated Bottlenecks and Squeeze-and-Excitation (SE) blocks.
+# Image Restoration (SEMI Hackathon 2026 Submission)
 
-## 1. Repository Structure
+This repository contains our final Phase 1 submission for the **SEMI Hackathon 2026: AI-Based Restoration of Degraded Images for Semiconductor Inspection**.
+
+## 1. Problem Statement
+In semiconductor manufacturing, microscopic inspection images are used to measure and verify chip quality at every stage of production. These images must be extremely sharp and clean because a single pixel of noise or a small loss of detail can hide a defect that causes a chip to fail. 
+
+In practice, these images are often degraded by two types of signal loss:
+*   **Speckle Noise**: Random pixel-level noise that makes the image look 'grainy', pushing pixel values beyond the true image range.
+*   **Spatial Resolution Reduction**: The image has been downsampled (e.g., 256x256 → 128x128), losing critical fine detail that was visible at full resolution.
+
+The goal of this project is to develop an AI-powered restoration model capable of removing this noise and sharpening the detail back to the original resolution, enabling accurate defect detection.
+
+## 2. Our Methodology
+
+To solve this, we designed the **AdvancedResUNet (E06-D variant)**. It is a highly optimized, fully convolutional architecture containing exactly **1,026,766 parameters**, carefully balancing restoration quality against inference latency on edge hardware.
+
+Key architectural innovations include:
+*   **Multi-Scale Dilated Bottleneck**: Instead of a standard U-Net bottleneck, we use parallel convolutions with dilations of 1, 2, and 4. This significantly expands the model's receptive field to capture global structural context without losing spatial resolution.
+*   **Squeeze-and-Excitation (SE) Blocks**: Placed at the end of every encoder and decoder block, these modules adaptively recalibrate channel-wise feature responses, allowing the network to focus heavily on high-frequency texture details rather than flat, noisy regions.
+*   **Charbonnier Loss Optimization**: We trained the model using a robust Charbonnier Loss ($\epsilon=10^{-3}$) which penalized outliers less severely than standard MSE, preventing the model from aggressively blurring out critical semiconductor textures.
+
+Our final model achieved a rigorous validation performance of **28.54 dB PSNR** and **0.7604 SSIM**.
+
+---
+
+## 3. Repository Structure
 
 ```
 semi-img-restore/
@@ -37,7 +63,7 @@ semi-img-restore/
     └── REPRODUCIBILITY.md
 ```
 
-## 2. Setup Instructions
+## 4. Setup Instructions
 
 The repository relies on PyTorch and standard image processing libraries. Install the exact frozen environment using:
 
@@ -47,7 +73,7 @@ pip install -r requirements.txt
 
 *Note:* Ensure you have a CUDA-compatible environment. The scripts will automatically fallback to CPU if CUDA is unavailable, but inference time will significantly increase.
 
-## 3. Running Inference (Standalone Evaluator)
+## 5. Running Inference (Standalone Evaluator)
 
 The competition evaluation script is `inference.py`. It requires zero manual source code modifications and accepts raw paths.
 
@@ -74,7 +100,7 @@ python inference.py --input_dir /path/to/test_images --output_dir /path/to/resto
 ```
 *Supported formats: `npy` (default), `png`, `tif`.*
 
-## 4. Training Reproducibility
+## 6. Training Reproducibility
 
 The final model weights are already provided in `weights/best_model.pth`. Training from scratch is **not required** for inference. However, if reproducibility verification is requested, the training script can be run directly from the repository root:
 
