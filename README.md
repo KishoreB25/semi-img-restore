@@ -65,35 +65,35 @@ semi-img-restore/
 
 ## 4. Setup Instructions
 
-The repository relies on PyTorch and standard image processing libraries. Install the exact frozen environment using:
+Our model relies on PyTorch and standard image processing libraries. You can install our exact frozen environment using:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-*Note:* Ensure you have a CUDA-compatible environment. The scripts will automatically fallback to CPU if CUDA is unavailable, but inference time will significantly increase.
+*Note:* We highly recommend running this on a CUDA-compatible environment. Our scripts will automatically fall back to CPU if CUDA is unavailable, but inference time will significantly increase.
 
 ## 5. Running Inference (Standalone Evaluator)
 
-The competition evaluation script is `inference.py`. It requires zero manual source code modifications and accepts raw paths.
+We have provided `inference.py` as our standalone evaluation script. It requires zero manual source code modifications and accepts raw paths directly from the command line.
 
-**Important Guarantees:**
-*   Loads exactly the frozen `best_model.pth` E06-D.
-*   Takes raw `float32` `.npy` arrays as input.
-*   Produces strictly clamped `[0,1]` float32 predictions internally.
-*   Does not compute Ground Truth metrics during the inference pass.
-*   **Filename Preservation:** The script automatically writes the output file with the exact same base name as the input file (e.g., `000001.npy` -> `000001.npy`), satisfying the filename preservation requirement.
+**Our Important Guarantees:**
+*   **Frozen Weights:** We load exactly the frozen `best_model.pth` (E06-D) checkpoint.
+*   **Input Support:** We accept raw `float32` `.npy` arrays as input.
+*   **Safe Clamping:** We produce strictly clamped `[0,1]` float32 predictions internally to prevent overflow.
+*   **Blind Inference:** We do not compute Ground Truth metrics during the inference pass.
+*   **Filename Preservation:** We automatically write the output file with the exact same base name as the input file (e.g., `000001.npy` -> `000001.npy`), perfectly satisfying your filename preservation requirement.
 
 ### Execution Command (H100 Benchmark)
 
-The KLA Judges will clone the repository on an NVIDIA H100 GPU and execute the script passing their hidden test dataset directories:
+To evaluate our model on your hidden test dataset, simply clone our repository and execute:
 
 ```bash
 python inference.py --input_dir /path/to/hidden_test_images --output_dir /path/to/restored
 ```
 
 ### Configurable Output Format
-By default, the script outputs strictly unquantized native `float32` `.npy` arrays. If the competition framework ultimately demands PNG or TIFF image files, append the `--output_format` flag:
+By default, we output strictly unquantized native `float32` `.npy` arrays to preserve maximum detail. If your evaluation framework ultimately requires PNG or TIFF image files, you can simply append the `--output_format` flag:
 
 ```bash
 python inference.py --input_dir /path/to/test_images --output_dir /path/to/restored --output_format png
@@ -102,10 +102,10 @@ python inference.py --input_dir /path/to/test_images --output_dir /path/to/resto
 
 ## 6. Training Reproducibility
 
-The final model weights are already provided in `weights/best_model.pth`. Training from scratch is **not required** for inference. However, if reproducibility verification is requested, the training script can be run directly from the repository root:
+We have already provided our final model weights in `weights/best_model.pth`, so training from scratch is **not required** for inference. However, if you wish to verify our reproducibility, you can run our training script directly from the repository root:
 
 ```bash
 python train.py
 ```
 
-This will automatically load the canonical Phase 10.1 Ground Truth hyperparameters (`AdamW`, `CosineAnnealingLR`, `lr=2e-4`, Charbonnier Loss `eps=1e-3`, batch size 16) and begin a 120-epoch training cycle.
+This will automatically load our canonical Phase 10.1 Ground Truth hyperparameters (`AdamW`, `CosineAnnealingLR`, `lr=2e-4`, Charbonnier Loss `eps=1e-3`, batch size 16) and train our E06-D architecture for 120 epochs.
