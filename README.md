@@ -52,7 +52,11 @@ semi-img-restore/
 │   └── best_model.pth      # Official frozen 1,026,766 parameter E06-D Checkpoint
 │
 ├── outputs/
-│   └── validation/         # 320-image reproducibility output directory
+│   ├── validation/         # 320-image reproducibility output directory
+│   └── test_restored/      # 400 restored outputs from the public Test_NoisyLR
+│
+├── Test_NoisyLR/           # Provided public test dataset (inputs)
+│   └── NoisyLR/            # 400 noisy float32 .npy arrays
 │
 ├── figures/                # Qualitative visualizations from validation
 │   └── ...
@@ -62,6 +66,10 @@ semi-img-restore/
     ├── EVALUATION_PROTOCOL.md
     └── REPRODUCIBILITY.md
 ```
+
+> [!NOTE] 
+> **Where is the Training Data?** 
+> The massive training dataset is intentionally excluded from this GitHub repository to comply with file size constraints. However, we have included the complete public test dataset (`Test_NoisyLR`) and our final test outputs (`outputs/test_restored/`) so you can verify our exact predictions.
 
 ## 4. Setup Instructions
 
@@ -84,12 +92,20 @@ We have provided `inference.py` as our standalone evaluation script. It requires
 *   **Blind Inference:** We do not compute Ground Truth metrics during the inference pass.
 *   **Filename Preservation:** We automatically write the output file with the exact same base name as the input file (e.g., `000001.npy` -> `000001.npy`), perfectly satisfying your filename preservation requirement.
 
-### Execution Command (H100 Benchmark)
+### Execution Command (H100 Benchmark / Private Test Set)
 
-To evaluate our model on your hidden test dataset, simply clone our repository and execute:
+To evaluate our model on your hidden test dataset, simply clone our repository and execute the script by providing your custom `--input_dir` and `--output_dir` paths:
 
 ```bash
 python inference.py --input_dir /path/to/hidden_test_images --output_dir /path/to/restored
+```
+
+### Reproducing our Public Test Results
+
+We ran inference on the public `Test_NoisyLR` dataset using the exact command below. The resulting 400 restored float32 `.npy` images are included in this repository under `outputs/test_restored/`:
+
+```bash
+python inference.py --input_dir Test_NoisyLR/NoisyLR --output_dir outputs/test_restored
 ```
 
 ### Configurable Output Format
