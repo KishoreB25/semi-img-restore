@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/banner.png" alt="SEMI Hackathon 2026" width="600"/>
+  <img src="assests\images\banner.png" alt="SEMI Hackathon 2026" width="600"/>
 </div>
 
 # Image Restoration (SEMI Hackathon 2026 Submission)
