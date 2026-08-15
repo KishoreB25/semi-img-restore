@@ -4,7 +4,6 @@ output/**
 *.pdf
 *.npy
 *.pyc
-*.png
 # Python environments and caches
 venv/
 env/
@@ -12,5 +11,4 @@ env/
 __pycache__/
 .ipynb_checkpoints/
 reports/
-results/
 visualizations/
