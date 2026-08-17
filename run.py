@@ -69,10 +69,10 @@ def save_image(img_np, output_path, out_format):
 
 def main():
     parser = argparse.ArgumentParser(description="Standalone Evaluator for E06-D (KLA Competition)")
-    parser.add_argument('--input_dir', type=str, required=True, help="Path to test images directory containing .npy files.")
-    parser.add_argument('--output_dir', type=str, required=True, help="Path to output directory where restored images will be saved.")
+    parser.add_argument('input_dir', type=str, help="Path to test images directory containing .npy files.")
+    parser.add_argument('output_dir', type=str, help="Path to output directory where restored images will be saved.")
     parser.add_argument('--output_format', type=str, default='npy', choices=['npy', 'png', 'tif'], help="Format to save the restored outputs. Default is npy to preserve float32.")
-    parser.add_argument('--weights', type=str, default=os.path.join(project_root, 'weights', 'best_model.pth'), help="Path to E06-D checkpoint.")
+    parser.add_argument('--weights', type=str, default=os.path.join(project_root, 'models', 'best_model.pth'), help="Path to E06-D checkpoint.")
     
     args = parser.parse_args()
     

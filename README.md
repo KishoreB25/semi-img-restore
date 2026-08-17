@@ -2,7 +2,7 @@
   <img src="assests\images\banner.png" alt="SEMI Hackathon 2026" width="600"/>
 </div>
 
-# Track 1 : Image Restoration (SEMI Hackathon 2026 Submission)
+# Track 1 : Image Restoration (Team_Spectrum Submission)
 
 This repository contains our final submission for **Track 1 : AI-Based Restoration of Degraded Images for Semiconductor Inspection**.
 
@@ -46,9 +46,9 @@ semi-img-restore/
 │   └── generate_training_curves.py 
 │
 ├── train.py                # Reproducibility training script
-├── inference.py            # STANDALONE INFERENCE SCRIPT (Competition Target)
+├── run.py                  # STANDALONE INFERENCE SCRIPT (Competition Target)
 │
-├── weights/
+├── models/
 │   └── best_model.pth      # Official frozen 1,026,766 parameter E06-D Checkpoint
 │
 ├── outputs/
@@ -83,10 +83,10 @@ pip install -r requirements.txt
 
 ## 5. Running Inference (Standalone Evaluator)
 
-We have provided `inference.py` as our standalone evaluation script. It requires zero manual source code modifications and accepts raw paths directly from the command line.
+We have provided `run.py` as our standalone evaluation script. It requires zero manual source code modifications and accepts raw paths directly from the command line.
 
 **Our Important Guarantees:**
-*   **Frozen Weights:** We load exactly the frozen `best_model.pth` (E06-D) checkpoint.
+*   **Frozen Weights:** We load exactly the frozen `best_model.pth` (E06-D) checkpoint from the `models/` directory.
 *   **Input Support:** We accept raw `float32` `.npy` arrays as input.
 *   **Safe Clamping:** We produce strictly clamped `[0,1]` float32 predictions internally to prevent overflow.
 *   **Blind Inference:** We do not compute Ground Truth metrics during the inference pass.
@@ -94,10 +94,10 @@ We have provided `inference.py` as our standalone evaluation script. It requires
 
 ### Execution Command (H100 Benchmark / Private Test Set)
 
-To evaluate our model on your hidden test dataset, simply clone our repository and execute the script by providing your custom `--input_dir` and `--output_dir` paths:
+To evaluate our model on your hidden test dataset, simply clone our repository and execute the script by providing your custom `<input-dir>` and `<output-dir>` positional paths:
 
 ```bash
-python inference.py --input_dir /path/to/hidden_test_images --output_dir /path/to/restored
+python run.py /path/to/hidden_test_images /path/to/restored
 ```
 
 ### Reproducing our Public Test Results
@@ -105,20 +105,20 @@ python inference.py --input_dir /path/to/hidden_test_images --output_dir /path/t
 We ran inference on the public `Test_NoisyLR` dataset using the exact command below. The resulting 400 restored float32 `.npy` images are included in this repository under `outputs/test_restored/`:
 
 ```bash
-python inference.py --input_dir Test_NoisyLR/NoisyLR --output_dir outputs/test_restored
+python run.py Test_NoisyLR/NoisyLR outputs/test_restored
 ```
 
 ### Configurable Output Format
 By default, we output strictly unquantized native `float32` `.npy` arrays to preserve maximum detail. If your evaluation framework ultimately requires PNG or TIFF image files, you can simply append the `--output_format` flag:
 
 ```bash
-python inference.py --input_dir /path/to/test_images --output_dir /path/to/restored --output_format png
+python run.py /path/to/test_images /path/to/restored --output_format png
 ```
 *Supported formats: `npy` (default), `png`, `tif`.*
 
 ## 6. Training Reproducibility
 
-We have already provided our final model weights in `weights/best_model.pth`, so training from scratch is **not required** for inference. However, if you wish to verify our reproducibility, you can run our training script directly from the repository root:
+We have already provided our final model weights in `models/best_model.pth`, so training from scratch is **not required** for inference. However, if you wish to verify our reproducibility, you can run our training script directly from the repository root:
 
 ```bash
 python train.py
