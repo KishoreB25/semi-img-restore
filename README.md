@@ -31,7 +31,7 @@ Our final model achieved a rigorous validation performance of **28.54 dB PSNR** 
 ## 3. Repository Structure
 
 ```
-semi-img-restore/
+Team_Spectrum/
 ├── README.md               # Setup and execution instructions
 ├── requirements.txt        # Frozen training & inference environment
 ├── LICENSE                 # MIT License
